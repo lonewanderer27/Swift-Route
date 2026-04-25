@@ -22,6 +22,7 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@swift-route/types": ["packages/types/src/index.ts"]
-    }
+    },
+    "types": ["jest", "node"]
   }
 }
