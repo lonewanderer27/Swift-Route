@@ -62,5 +62,6 @@ export class DeliveryJobsController {
   removeOne(
     @Param("id") id: string,
   ) {
+    return this.deliveryJobsService.deleteOne(id);
   }
 }

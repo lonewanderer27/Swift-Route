@@ -21,4 +21,9 @@ export class DeliveryJobsService {
     // push the new job to our static list
     this.jobs.push(newJob);
   }
+
+  deleteOne(id: string) {
+    // re-assign the jobs list without the specified record
+    this.jobs = this.jobs.filter((job) => job.id != id);
+  }
 }
