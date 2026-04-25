@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/swift-route/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/swift-route/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/swift-route",
+  "projects": {
+    "swift-backend": {
+      "type": "application",
+      "root": "apps/swift-backend",
+      "entryFile": "main",
+      "sourceRoot": "apps/swift-backend/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/swift-backend/tsconfig.app.json"
+      }
+    },
+    "swift-route": {
+      "type": "application",
+      "root": "apps/swift-route",
+      "entryFile": "main",
+      "sourceRoot": "apps/swift-route/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/swift-route/tsconfig.app.json"
+      }
+    }
+  }
+}
