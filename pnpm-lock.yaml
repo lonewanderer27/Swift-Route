@@ -117,6 +117,9 @@ importers:
       '@swift-route/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@tanstack/react-query':
+        specifier: ^5.100.4
+        version: 5.100.4(react@19.1.0)
       axios:
         specifier: ^1.15.2
         version: 1.15.2
@@ -1846,6 +1849,14 @@ packages:
 
   '@sinonjs/fake-timers@15.3.2':
     resolution: {integrity: sha512-mrn35Jl2pCpns+mE3HaZa1yPN5EYCRgiMI+135COjr2hr8Cls9DXqIZ57vZe2cz7y2XVSq92tcs6kGQcT1J8Rw==}
+
+  '@tanstack/query-core@5.100.4':
+    resolution: {integrity: sha512-LdW/DDImiw9g4ukyndlrifIXPFpoQjNybCAIDBcPvdYu9iUIhAKwhznfAATe2dJBonhm0O3ksoCMmVTUxN89uA==}
+
+  '@tanstack/react-query@5.100.4':
+    resolution: {integrity: sha512-L6n5UWBvnMuYaZTu6WgTbl2mJ7fob1NIdL2vIFo05R/mkr9XvP5PmesZOBiicxzhDAuUurYIG+ZFONbvarEFtQ==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@tokenizer/inflate@0.4.1':
     resolution: {integrity: sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA==}
@@ -8058,6 +8069,13 @@ snapshots:
   '@sinonjs/fake-timers@15.3.2':
     dependencies:
       '@sinonjs/commons': 3.0.1
+
+  '@tanstack/query-core@5.100.4': {}
+
+  '@tanstack/react-query@5.100.4(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-core': 5.100.4
+      react: 19.1.0
 
   '@tokenizer/inflate@0.4.1':
     dependencies:
