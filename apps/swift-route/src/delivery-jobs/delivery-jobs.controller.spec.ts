@@ -60,4 +60,25 @@ describe("DeliveryJobsController", () => {
       updatedJob.status,
     ).toBe(DeliveryStatus.IN_TRANSIT);
   });
+
+  it("should transition status from in-transit to delivered", () => {
+    // choose one record from our static delivery jobs
+    const jobId = JOB_IDS.chris_inTransit;
+    const initialJob = controller.findOne(jobId);
+    const expectedStatus = DeliveryStatus.DELIVERED;
+
+    // double check that the initial status is "in-transit"
+    const initialStatus = initialJob?.status;
+    expect(initialStatus).toBe(DeliveryStatus.IN_TRANSIT);
+
+    // now advance the status to "delivered"
+    // we expect that this will return the updated job
+    const updatedJob = controller.patchStatus(jobId, {
+      status: expectedStatus,
+    });
+
+    expect(
+      updatedJob.status,
+    ).toBe(expectedStatus);
+  });
 });
