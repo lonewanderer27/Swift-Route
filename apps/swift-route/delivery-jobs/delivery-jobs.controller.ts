@@ -44,6 +44,7 @@ export class DeliveryJobsController {
   }
 
   @Put(":id")
+  @HttpCode(HttpStatus.OK)
   updateOne(
     @Param("id") id: string,
     @Body() body: UpdateDeliveryJobInput,
@@ -51,7 +52,7 @@ export class DeliveryJobsController {
     return this.deliveryJobsService.putOne(id, body);
   }
 
-  @Patch("id")
+  @Patch(":id")
   @HttpCode(HttpStatus.OK)
   patchOne(
     @Param("id") id: string,
@@ -60,6 +61,8 @@ export class DeliveryJobsController {
     return this.deliveryJobsService.patchOne(id, body);
   }
 
+  @Patch(":id/status")
+  @HttpCode(HttpStatus.OK)
   patchStatus(
     @Param("id") id: string,
     @Body() body: PatchStatusInput,
