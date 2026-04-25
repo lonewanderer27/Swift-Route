@@ -7,10 +7,11 @@ import {
 } from "@swift-route/types";
 import { randomUUID } from "crypto";
 
-type UpdateDeliveryJobInput = {
+export type UpdateDeliveryJobInput = {
   pickup_address: string;
   dropoff_address: string;
   package_type: PackageType;
+  status: DeliveryStatus;
   courier: string;
   notes?: string[];
 };
@@ -26,13 +27,14 @@ export class UpdateDeliveryJobModel implements DeliveryJob {
   public createdAt: Date;
   public updatedAt: Date;
 
-  constructor(input: UpdateDeliveryJobInput) {
-    this.id = randomUUID();
+  constructor(id: string, createdAt: Date, input: UpdateDeliveryJobInput) {
+    // id, createdAt fields must be preserved
+    this.id = id;
     this.pickupAddress = input.pickup_address;
     this.dropoffAddress = input.dropoff_address;
     this.packageType = input.package_type;
-    this.status = DeliveryStatus.ASSIGNED;
-    this.createdAt = new Date();
+    this.status = input.status;
+    this.createdAt = createdAt;
     this.updatedAt = new Date();
 
     // Transform note strings → DeliveryNote objects

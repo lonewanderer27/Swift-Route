@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { DeliveryJob } from "@swift-route/types";
 import { CreateDeliveryJobInput } from "./dto/create-delivery-job.dto";
-import { UpdateDeliveryJobModel } from "./dto/update-delivery-job.dto";
+import { UpdateDeliveryJobInput } from "./dto/update-delivery-job.dto";
 import { DeliveryJobsService } from "./delivery-jobs.service";
 
 @Controller("delivery-jobs")
@@ -40,18 +40,12 @@ export class DeliveryJobsController {
     return this.deliveryJobsService.createOne(body);
   }
 
-  // TODO: PUT /delivery-jobs/:id
   @Put(":id")
   updateOne(
     @Param("id") id: string,
-    @Body() updateDeliveryJobModel: UpdateDeliveryJobModel,
+    @Body() body: UpdateDeliveryJobInput,
   ) {
-    const { id: _ignoredId, ...updatePayload } = updateDeliveryJobModel;
-
-    return {
-      id,
-      ...updatePayload,
-    };
+    return this.deliveryJobsService.putOne(id, body);
   }
 
   // TODO: PATCH /delivery-jobs/:id/status
