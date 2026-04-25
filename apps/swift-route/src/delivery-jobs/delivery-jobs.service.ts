@@ -4,7 +4,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from "@nestjs/common";
-import { deliveryJobsStore } from "../src/stores";
+import { deliveryJobsStore } from "../stores";
 import {
   CreateDeliveryJobInput,
   CreateDeliveryJobModel,
