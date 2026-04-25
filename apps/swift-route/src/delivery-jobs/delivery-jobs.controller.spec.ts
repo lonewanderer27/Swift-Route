@@ -38,7 +38,7 @@ describe("DeliveryJobsController", () => {
     // choose one record from our static delivery jobs
     const jobId = JOB_IDS.chris_assigned;
     const expectedJob = controller.findOne(jobId);
-    expect(controller.findOne(jobId)).toBe(expectedJob);
+    expect(controller.findOne(jobId)).toEqual(expectedJob);
   });
 
   it("should transition status from assigned to in-transit", () => {
