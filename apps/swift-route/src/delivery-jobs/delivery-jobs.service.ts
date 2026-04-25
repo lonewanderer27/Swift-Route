@@ -88,14 +88,12 @@ export class DeliveryJobsService {
   putOne(id: string, body: UpdateDeliveryJobInput) {
     // check first if we have the record
     const job = this.jobs.find((job) => job.id === id);
+    const jobIndex = this.jobs.find((_, index) => jobIndex === index);
 
     if (!job) {
       // return a 404 error?
       throw new NotFoundException("Delivery Job not found");
     }
-
-    // otherwise remove the existing record
-    this.jobs = this.jobs.filter((job) => job.id != id);
 
     // create an updated imaginary record
     const updatedJob = new UpdateDeliveryJobModel(
@@ -104,8 +102,8 @@ export class DeliveryJobsService {
       body,
     );
 
-    // then re-add the updated record
-    this.jobs.push(updatedJob);
+    // replace the existing record in the current index
+    this.jobs[jobIndex] = updatedJob;
 
     // return the updated job
     return updatedJob;
@@ -113,15 +111,13 @@ export class DeliveryJobsService {
 
   patchOne(id: string, body: PatchDeliveryJobInput) {
     // check first if we have the record
-    const job = this.jobs.find((job) => job.id === id);
+    const jobIndex = this.jobs.findIndex((job) => job.id === id);
+    const job = this.jobs.find((_, index) => jobIndex === index);
 
     if (!job) {
       // return a 404 error?
       throw new NotFoundException("Delivery Job not found");
     }
-
-    // otherwise remove the existing record
-    this.jobs = this.jobs.filter((job) => job.id != id);
 
     // create a new updaated imaginary record
     const updatedJob = new PatchDeliveryJobModel(
@@ -129,8 +125,8 @@ export class DeliveryJobsService {
       body,
     );
 
-    // then re-add the updated record
-    this.jobs.push(updatedJob);
+    // replace the existing record in the current index
+    this.jobs[jobIndex] = updatedJob;
 
     // return the updated job
     return updatedJob;
@@ -176,17 +172,14 @@ export class DeliveryJobsService {
       }
     }
 
-    // proceed to remove the existing record
-    this.jobs = this.jobs.filter((job) => job.id != id);
-
     // create a new updaated imaginary record
     const updatedJob = new PatchStatusModel(
       job,
       body,
     );
 
-    // then re-add the updated record
-    this.jobs.push(updatedJob);
+    // replace the existing record in the current index
+    this.jobs[jobIndex] = updatedJob;
 
     // return the updated job
     return updatedJob;
