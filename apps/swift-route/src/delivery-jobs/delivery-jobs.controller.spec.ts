@@ -3,6 +3,7 @@ import { DeliveryJobsController } from "./delivery-jobs.controller";
 import { DeliveryJobsService } from "./delivery-jobs.service";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { deliveryJobsStore, JOB_IDS } from "../stores/delivery-jobs.store";
+import { DeliveryStatus } from "@swift-route/types";
 
 describe("DeliveryJobsController", () => {
   let controller: DeliveryJobsController;
@@ -38,5 +39,25 @@ describe("DeliveryJobsController", () => {
     const jobId = JOB_IDS.chris_assigned;
     const expectedJob = deliveryJobsStore.find((job) => job.id === jobId);
     expect(controller.findOne(jobId)).toBe(expectedJob);
+  });
+
+  it("should transition status from assigned to in-transit", () => {
+    // choose one record from our static delivery jobs
+    const jobId = JOB_IDS.chris_assigned;
+    const initialJob = deliveryJobsStore.find((job) => job.id === jobId);
+
+    // double check that the initial status is "assigned"
+    const initialStatus = initialJob?.status;
+    expect(initialStatus).toBe(DeliveryStatus.ASSIGNED);
+
+    // now advance the status to "in-transit"
+    // we expect that this will return the updated job
+    const updatedJob = controller.patchStatus(jobId, {
+      status: DeliveryStatus.IN_TRANSIT,
+    });
+
+    expect(
+      updatedJob.status,
+    ).toBe(DeliveryStatus.IN_TRANSIT);
   });
 });
