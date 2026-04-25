@@ -22,12 +22,6 @@ import { PatchStatusInput } from "./dto/patch-status.dto";
 export class DeliveryJobsController {
   constructor(private deliveryJobsService: DeliveryJobsService) {}
 
-  /*
-    TODO: GET /delivery-jobs
-
-    required param: ?courierId (string)
-    optional param: ?status (DeliveryStatus)
-  */
   @Get()
   findAll(
     @Query("courierId") courierId: string,
