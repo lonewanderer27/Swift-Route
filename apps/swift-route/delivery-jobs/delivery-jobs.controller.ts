@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
 } from "@nestjs/common";
@@ -13,6 +14,7 @@ import { DeliveryJob } from "@swift-route/types";
 import { CreateDeliveryJobInput } from "./dto/create-delivery-job.dto";
 import { UpdateDeliveryJobInput } from "./dto/update-delivery-job.dto";
 import { DeliveryJobsService } from "./delivery-jobs.service";
+import { PatchDeliveryJobInput } from "./dto/patch-delivery-job.dto";
 
 @Controller("delivery-jobs")
 export class DeliveryJobsController {
@@ -48,7 +50,14 @@ export class DeliveryJobsController {
     return this.deliveryJobsService.putOne(id, body);
   }
 
-  // TODO: PATCH /delivery-jobs/:id/status
+  @Patch("id")
+  @HttpCode(HttpStatus.OK)
+  patchOne(
+    @Param("id") id: string,
+    @Body() body: PatchDeliveryJobInput,
+  ) {
+    return this.deliveryJobsService.patchOne(id, body);
+  }
 
   // TODO: DELETE /delivery-jobs/:id
   @Delete(":id")

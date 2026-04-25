@@ -8,6 +8,10 @@ import {
   UpdateDeliveryJobInput,
   UpdateDeliveryJobModel,
 } from "./dto/update-delivery-job.dto";
+import {
+  PatchDeliveryJobInput,
+  PatchDeliveryJobModel,
+} from "./dto/patch-delivery-job.dto";
 
 @Injectable()
 export class DeliveryJobsService {
@@ -54,6 +58,31 @@ export class DeliveryJobsService {
     const updatedJob = new UpdateDeliveryJobModel(
       job.id,
       job.createdAt,
+      body,
+    );
+
+    // then re-add the updated record
+    this.jobs.push(updatedJob);
+
+    // return the updated job
+    return updatedJob;
+  }
+
+  patchOne(id: string, body: PatchDeliveryJobInput) {
+    // check first if we have the record
+    const job = this.jobs.find((job) => job.id === id);
+
+    if (!job) {
+      // return a 404 error?
+      throw new NotFoundException("Delivery Job not found");
+    }
+
+    // otherwise remove the existing record
+    this.jobs = this.jobs.filter((job) => job.id != id);
+
+    // create a new updaated imaginary record
+    const updatedJob = new PatchDeliveryJobModel(
+      job,
       body,
     );
 
