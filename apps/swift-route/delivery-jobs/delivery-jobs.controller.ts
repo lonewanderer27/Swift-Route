@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Put } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from "@nestjs/common";
 import { deliveryJobsStore } from "../src/stores";
 import { DeliveryJob } from "@swift-route/types";
 import { CreateDeliveryJobModel } from "./dto/create-delivery-job.dto";
@@ -39,4 +49,12 @@ export class DeliveryJobsController {
   }
 
   // TODO: PATCH /delivery-jobs/:id/status
+
+  // TODO: DELETE /delivery-jobs/:id
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeOne(
+    @Param("id") id: string,
+  ) {
+  }
 }
