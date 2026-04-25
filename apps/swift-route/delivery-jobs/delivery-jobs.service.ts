@@ -8,4 +8,8 @@ export class DeliveryJobsService {
   findAll() {
     return this.jobs;
   }
+
+  findOne(id: string) {
+    return this.jobs.find((job) => job.id === id);
+  }
 }

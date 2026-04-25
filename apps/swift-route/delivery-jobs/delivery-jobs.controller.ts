@@ -30,10 +30,9 @@ export class DeliveryJobsController {
     return this.deliveryJobsService.findAll();
   }
 
-  // TODO: GET /delivery-jobs/:id
   @Get(":id")
   findOne(@Param("id") id: string) {
-    return deliveryJobsStore.find((record) => record.id === id);
+    return this.deliveryJobsService.findOne(id);
   }
 
   // TODO: POST /delivery-jobs
