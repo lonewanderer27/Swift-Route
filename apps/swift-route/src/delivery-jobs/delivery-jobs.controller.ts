@@ -13,7 +13,7 @@ import {
 } from "@nestjs/common";
 import { DeliveryJob, DeliveryStatus } from "@swift-route/types";
 import { CreateDeliveryJobInput } from "./dto/create-delivery-job.dto";
-import { UpdateDeliveryJobInput } from "./dto/update-delivery-job.dto";
+import { UpdateDeliveryJobInput } from "./dto/put-delivery-job.dto";
 import { DeliveryJobsService } from "./delivery-jobs.service";
 import { PatchDeliveryJobInput } from "./dto/patch-delivery-job.dto";
 import { PatchStatusInput } from "./dto/patch-status.dto";

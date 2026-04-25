@@ -12,7 +12,7 @@ import {
 import {
   UpdateDeliveryJobInput,
   UpdateDeliveryJobModel,
-} from "./dto/update-delivery-job.dto";
+} from "./dto/put-delivery-job.dto";
 import {
   PatchDeliveryJobInput,
   PatchDeliveryJobModel,
