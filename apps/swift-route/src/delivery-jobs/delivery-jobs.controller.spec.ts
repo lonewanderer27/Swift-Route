@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { DeliveryJobsController } from "./delivery-jobs.controller";
 import { DeliveryJobsService } from "./delivery-jobs.service";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 describe("DeliveryJobsController", () => {
   let controller: DeliveryJobsController;
@@ -23,5 +23,12 @@ describe("DeliveryJobsController", () => {
     expect(() => controller.findCourierJobs(undefined as any)).toThrow(
       BadRequestException,
     );
+  });
+
+  it("should throw 404 on unknown delivery job", () => {
+    expect(() => controller.findOne("byd2c3d4-0001-4000-8000-000000000001"))
+      .toThrow(
+        NotFoundException,
+      );
   });
 });
