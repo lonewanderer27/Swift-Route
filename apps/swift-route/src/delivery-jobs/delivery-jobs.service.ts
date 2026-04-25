@@ -70,7 +70,7 @@ export class DeliveryJobsService {
 
     if (!job) {
       // return a 404 error?
-      throw new NotFoundException("Delivery Job not found");
+      throw new NotFoundException(`Delivery Job with ID: ${id} not found`);
     }
 
     // otherwise return the record
@@ -92,7 +92,7 @@ export class DeliveryJobsService {
 
     if (!job) {
       // return a 404 error?
-      throw new NotFoundException("Delivery Job not found");
+      throw new NotFoundException(`Delivery Job with ID: ${id} not found`);
     }
 
     // create an updated imaginary record
@@ -116,7 +116,7 @@ export class DeliveryJobsService {
 
     if (!job) {
       // return a 404 error?
-      throw new NotFoundException("Delivery Job not found");
+      throw new NotFoundException(`Delivery Job with ID: ${id} not found`);
     }
 
     // create a new updaated imaginary record
@@ -139,13 +139,13 @@ export class DeliveryJobsService {
 
     if (!job) {
       // return a 404 error?
-      throw new NotFoundException("Delivery Job not found");
+      throw new NotFoundException(`Delivery Job with ID: ${id} not found`);
     }
 
     const oldStatus = job.status;
     const newStatus = body.status;
     const invalidStatusException = new UnprocessableEntityException(
-      `New delivery status not valid. Old: ${oldStatus}, New: ${newStatus}`,
+      `New delivery status for ID: ${id} not valid. Old: ${oldStatus}, New: ${newStatus}`,
     );
 
     // enforce valid status transition
