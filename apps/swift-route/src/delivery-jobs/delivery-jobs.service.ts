@@ -31,6 +31,25 @@ export class DeliveryJobsService {
 
         if (courierId) {
           includeJob = job.courier.id === courierId;
+        }
+
+        if (status) {
+          includeJob = job.status === status;
+        }
+
+        return includeJob;
+      });
+
+    return jobs;
+  }
+
+  findCourierJobs(courierId?: string, status?: DeliveryStatus) {
+    const jobs = this.jobs
+      .filter((job) => {
+        let includeJob = true;
+
+        if (courierId) {
+          includeJob = job.courier.id === courierId;
         } else {
           throw new BadRequestException("courierId is required");
         }

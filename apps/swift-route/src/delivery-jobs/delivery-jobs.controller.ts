@@ -23,6 +23,14 @@ export class DeliveryJobsController {
   constructor(private deliveryJobsService: DeliveryJobsService) {}
 
   @Get()
+  findCourierJobs(
+    @Query("courierId") courierId: string,
+    @Query("status") status: DeliveryStatus,
+  ): DeliveryJob[] {
+    return this.deliveryJobsService.findCourierJobs(courierId, status);
+  }
+
+  @Get("/all")
   findAll(
     @Query("courierId") courierId: string,
     @Query("status") status: DeliveryStatus,
