@@ -9,9 +9,8 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { deliveryJobsStore } from "../src/stores";
 import { DeliveryJob } from "@swift-route/types";
-import { CreateDeliveryJobModel } from "./dto/create-delivery-job.dto";
+import { CreateDeliveryJobInput } from "./dto/create-delivery-job.dto";
 import { UpdateDeliveryJobModel } from "./dto/update-delivery-job.dto";
 import { DeliveryJobsService } from "./delivery-jobs.service";
 
@@ -35,10 +34,10 @@ export class DeliveryJobsController {
     return this.deliveryJobsService.findOne(id);
   }
 
-  // TODO: POST /delivery-jobs
   @Post()
-  createOne(@Body() createDeliveryJobModel: CreateDeliveryJobModel) {
-    return createDeliveryJobModel;
+  @HttpCode(HttpStatus.CREATED)
+  createOne(@Body() body: CreateDeliveryJobInput) {
+    return this.deliveryJobsService.createOne(body);
   }
 
   // TODO: PUT /delivery-jobs/:id
