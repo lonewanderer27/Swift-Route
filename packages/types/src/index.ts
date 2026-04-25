@@ -10,6 +10,7 @@ type DeliveryNote = {
 type DeliveryJob = {
   id: number;
   createdAt: Date;
+  updatedAt: Date;
   pickupAddress: string;
   dropoffAddress: string;
   packageType: PackageType;
@@ -17,4 +18,5 @@ type DeliveryJob = {
   notes: DeliveryNote[];
 };
 
-export type { DeliveryJob };
+export type { DeliveryJob, DeliveryNote };
+export { DeliveryStatus, PackageType };
