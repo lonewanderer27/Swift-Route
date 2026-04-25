@@ -36,7 +36,7 @@ export class DeliveryJobsController {
       of ParseUUIDPipe in such ideal scenario.
     */
     @Query("courierId") courierId: string,
-    @Query("status") status: DeliveryStatus,
+    @Query("status") status?: DeliveryStatus,
   ): DeliveryJob[] {
     return this.deliveryJobsService.findCourierJobs(courierId, status);
   }
@@ -44,7 +44,7 @@ export class DeliveryJobsController {
   @Get("/all")
   findAll(
     @Query("courierId", ParseUUIDPipe) courierId: UUID,
-    @Query("status") status: DeliveryStatus,
+    @Query("status") status?: DeliveryStatus,
   ): DeliveryJob[] {
     return this.deliveryJobsService.findAll(courierId, status);
   }
