@@ -13,13 +13,21 @@ import { deliveryJobsStore } from "../src/stores";
 import { DeliveryJob } from "@swift-route/types";
 import { CreateDeliveryJobModel } from "./dto/create-delivery-job.dto";
 import { UpdateDeliveryJobModel } from "./dto/update-delivery-job.dto";
+import { DeliveryJobsService } from "./delivery-jobs.service";
 
 @Controller("delivery-jobs")
 export class DeliveryJobsController {
-  // TODO: GET /delivery-jobs
+  constructor(private deliveryJobsService: DeliveryJobsService) {}
+
+  /*
+    TODO: GET /delivery-jobs
+
+    required param: ?courierId (string)
+    optional param: ?status (DeliveryStatus)
+  */
   @Get()
   findAll(): DeliveryJob[] {
-    return deliveryJobsStore;
+    return this.deliveryJobsService.findAll();
   }
 
   // TODO: GET /delivery-jobs/:id
