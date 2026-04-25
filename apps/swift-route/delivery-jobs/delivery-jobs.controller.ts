@@ -15,6 +15,7 @@ import { CreateDeliveryJobInput } from "./dto/create-delivery-job.dto";
 import { UpdateDeliveryJobInput } from "./dto/update-delivery-job.dto";
 import { DeliveryJobsService } from "./delivery-jobs.service";
 import { PatchDeliveryJobInput } from "./dto/patch-delivery-job.dto";
+import { PatchStatusInput } from "./dto/patch-status.dto";
 
 @Controller("delivery-jobs")
 export class DeliveryJobsController {
@@ -57,6 +58,13 @@ export class DeliveryJobsController {
     @Body() body: PatchDeliveryJobInput,
   ) {
     return this.deliveryJobsService.patchOne(id, body);
+  }
+
+  patchStatus(
+    @Param("id") id: string,
+    @Body() body: PatchStatusInput,
+  ) {
+    return this.deliveryJobsService.patchStatus(id, body);
   }
 
   // TODO: DELETE /delivery-jobs/:id

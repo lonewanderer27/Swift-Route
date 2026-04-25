@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from "@nestjs/common";
 import { deliveryJobsStore } from "../src/stores";
 import {
   CreateDeliveryJobInput,
@@ -12,6 +16,8 @@ import {
   PatchDeliveryJobInput,
   PatchDeliveryJobModel,
 } from "./dto/patch-delivery-job.dto";
+import { PatchStatusInput, PatchStatusModel } from "./dto/patch-status.dto";
+import { DeliveryStatus } from "@swift-route/types";
 
 @Injectable()
 export class DeliveryJobsService {
@@ -82,6 +88,62 @@ export class DeliveryJobsService {
 
     // create a new updaated imaginary record
     const updatedJob = new PatchDeliveryJobModel(
+      job,
+      body,
+    );
+
+    // then re-add the updated record
+    this.jobs.push(updatedJob);
+
+    // return the updated job
+    return updatedJob;
+  }
+
+  patchStatus(id: string, body: PatchStatusInput) {
+    // check first if we have the record
+    const jobIndex = this.jobs.findIndex((job) => job.id === id);
+    const job = this.jobs.find((_, index) => jobIndex === index);
+
+    if (!job) {
+      // return a 404 error?
+      throw new NotFoundException("Delivery Job not found");
+    }
+
+    const oldStatus = job.status;
+    const newStatus = body.status;
+    const invalidStatusException = new UnprocessableEntityException(
+      `New delivery status not valid. Old: ${oldStatus}, New: ${newStatus}`,
+    );
+
+    // enforce valid status transition
+    switch (oldStatus) {
+      case DeliveryStatus.ASSIGNED: {
+        // Assigned -> In-Transit
+        if (newStatus !== DeliveryStatus.IN_TRANSIT) {
+          throw invalidStatusException;
+        }
+        break;
+      }
+      case DeliveryStatus.IN_TRANSIT: {
+        // In-Transit -> Delivered
+        if (newStatus !== DeliveryStatus.DELIVERED) {
+          throw invalidStatusException;
+        }
+      }
+      case DeliveryStatus.DELIVERED: {
+        // Delivered - Shall be final status
+        throw invalidStatusException;
+      }
+      default: {
+        // Do nothing, valid status change
+      }
+    }
+
+    // proceed to remove the existing record
+    this.jobs = this.jobs.filter((job) => job.id != id);
+
+    // create a new updaated imaginary record
+    const updatedJob = new PatchStatusModel(
       job,
       body,
     );
