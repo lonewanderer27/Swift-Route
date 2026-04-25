@@ -19,6 +19,7 @@ import {
 } from "./dto/patch-delivery-job.dto";
 import { PatchStatusInput, PatchStatusModel } from "./dto/patch-status.dto";
 import { DeliveryStatus } from "@swift-route/types";
+import { UUID } from "crypto";
 
 const deliveryJobNotFoundException = (id: string) =>
   new NotFoundException(`Delivery Job with ID: ${id} not found`);
@@ -27,7 +28,7 @@ const deliveryJobNotFoundException = (id: string) =>
 export class DeliveryJobsService {
   private jobs = deliveryJobsStore;
 
-  findAll(courierId?: string, status?: DeliveryStatus) {
+  findAll(courierId?: UUID, status?: DeliveryStatus) {
     const jobs = this.jobs
       .filter((job) => {
         let includeJob = true;

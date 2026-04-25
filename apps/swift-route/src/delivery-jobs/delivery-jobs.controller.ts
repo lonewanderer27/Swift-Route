@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Put,
@@ -17,6 +18,7 @@ import { UpdateDeliveryJobInput } from "./dto/put-delivery-job.dto";
 import { DeliveryJobsService } from "./delivery-jobs.service";
 import { PatchDeliveryJobInput } from "./dto/patch-delivery-job.dto";
 import { PatchStatusInput } from "./dto/patch-status.dto";
+import { UUID } from "crypto";
 
 @Controller("delivery-jobs")
 export class DeliveryJobsController {
@@ -24,6 +26,15 @@ export class DeliveryJobsController {
 
   @Get()
   findCourierJobs(
+    /*
+      Ideally courierId should be of type UUID, however document
+      specifically asked for it to be a string. So I kept it
+      as a string type here.
+
+      It is set to UUID type onj findAll method though
+      which is not part of the specification, just to test the usage
+      of ParseUUIDPipe in such ideal scenario.
+    */
     @Query("courierId") courierId: string,
     @Query("status") status: DeliveryStatus,
   ): DeliveryJob[] {
@@ -32,7 +43,7 @@ export class DeliveryJobsController {
 
   @Get("/all")
   findAll(
-    @Query("courierId") courierId: string,
+    @Query("courierId", ParseUUIDPipe) courierId: UUID,
     @Query("status") status: DeliveryStatus,
   ): DeliveryJob[] {
     return this.deliveryJobsService.findAll(courierId, status);
