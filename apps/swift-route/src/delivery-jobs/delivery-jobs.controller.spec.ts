@@ -67,8 +67,9 @@ describe("DeliveryJobsController", () => {
   });
 
   it("should transition status from in-transit to delivered", () => {
-    // choose one record from our static delivery jobs
-    const jobId = JOB_IDS.chris_inTransit;
+    // choose the previous delivery job we advanced to in-transit
+    // just checking if Jest do not lose the in-memory DB we have
+    const jobId = JOB_IDS.chris_assigned;
     const initialJob = controller.findOne(jobId);
     const expectedStatus = DeliveryStatus.DELIVERED;
 
