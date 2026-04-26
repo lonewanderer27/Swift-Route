@@ -5,6 +5,7 @@ import { Button, Separator, XStack, YStack } from "tamagui";
 import useDeliveryJob from "@/hooks/use-delivery-job";
 import { STATUS_CONFIG, PACKAGE_ICON } from "@/constants/delivery-job";
 import { DeliveryStatus } from "@swift-route/types";
+import useUpdateDeliveryStatus from "@/hooks/use-update-delivery-status";
 
 const ACTION_LABEL: Record<DeliveryStatus, string> = {
   [DeliveryStatus.ASSIGNED]: "Mark as Picked Up",
@@ -33,6 +34,7 @@ const formatDate = (date: Date | string) =>
 export default function DeliveryJobDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const job = useDeliveryJob(id);
+  const { updateStatus, loading } = useUpdateDeliveryStatus();
 
   if (!job) {
     return (
@@ -50,6 +52,12 @@ export default function DeliveryJobDetails() {
   const actionLabel = ACTION_LABEL[job.status];
   const actionStyle = NEXT_STATUS_STYLE[job.status];
   const isDelivered = job.status === DeliveryStatus.DELIVERED;
+
+  const handleNext = () => {
+    if (isDelivered) return;
+    const nextStatus = job.status === DeliveryStatus.ASSIGNED ? DeliveryStatus.IN_TRANSIT : DeliveryStatus.DELIVERED;
+    updateStatus(job.id, nextStatus);
+  }
 
   return (
     <>
@@ -120,10 +128,18 @@ export default function DeliveryJobDetails() {
         <View style={{ padding: 16, paddingBottom: 16 + insets.bottom, borderTopWidth: 1, borderTopColor: "#E5E7EB" }}>
           <Button
             size="$5"
-            disabled={isDelivered}
-            style={actionStyle ? { backgroundColor: actionStyle.bg } : undefined}
+            disabled={loading || isDelivered}
+            onPress={handleNext}
+            style={(actionStyle) ? { backgroundColor: actionStyle.bg } : undefined}
           >
-            <Text style={{ fontWeight: "700", color: actionStyle ? actionStyle.color : "#888" }}>
+            <Text
+              style={{
+                fontWeight: "700",
+                color: actionStyle ?
+                  actionStyle.color :
+                  "#888"
+              }}
+            >
               {actionLabel}
             </Text>
           </Button>
