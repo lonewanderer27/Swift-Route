@@ -61,12 +61,13 @@ export default function Index() {
             data={jobs}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <DeliveryJobCard {...item} onPress={() => handleJob(item.id)} />}
-            contentContainerStyle={{ paddingVertical: 8 }}
+            contentContainerStyle={{ paddingVertical: 8, flexGrow: 1 }}
             refreshing={loading}
             onRefresh={refetch}
             ListEmptyComponent={() => (
-              <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: 50 }}>
+              <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 12 }}>
                 <Text style={{ fontSize: 16, color: "#888" }}>No delivery jobs found.</Text>
+                <Text style={{ fontSize: 14, color: "#3B82F6" }} onPress={refetch}>Refresh</Text>
               </View>
             )}
           />
