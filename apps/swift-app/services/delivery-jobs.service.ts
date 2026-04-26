@@ -9,7 +9,7 @@ class DeliveryJobsService {
     return res.data;
   }
   static async updateStatus(id: string, status: DeliveryStatus) {
-    const res = await api.patch<DeliveryJob>(`delivery-jobs/${id}`, {
+    const res = await api.patch<DeliveryJob>(`delivery-jobs/${id}/status`, {
       status,
     });
     return res.data;
