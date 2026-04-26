@@ -23,11 +23,11 @@ const useDeliveryJobs = (courierId: string, status?: DeliveryStatus) => {
     } finally {
       setLoading(false);
     }
-
-    useEffect(() => {
-      fetchJobs();
-    }, [courierId, status])
   }
+
+  useEffect(() => {
+    fetchJobs();
+  }, [courierId, status])
 
   return {
     jobs, loading, error,
