@@ -92,4 +92,14 @@ describe("DeliveryJobDetails", () => {
   it("renders without crashing", () => {
     render(<DeliveryJobDetails />);
   });
+
+  it("should render bottom bar button as 'Mark as Picked Up'", () => {
+    // Render the screen — beforeEach already pointed useLocalSearchParams at jk_assigned,
+    // so the component loads that specific job from the store.
+    const { getByText } = render(<DeliveryJobDetails />);
+
+    // "Mark as Picked Up" is the ACTION_LABEL for DeliveryStatus.ASSIGNED.
+    // Finding it confirms the component reads the job's status and maps it to the correct label.
+    expect(getByText("Mark as Picked Up")).toBeTruthy();
+  });
 });
