@@ -2,10 +2,13 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { ScrollView, View, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Separator, Spinner, XStack, YStack } from "tamagui";
+import { Toast, toast } from "@tamagui/toast/v2";
 import useDeliveryJob from "@/hooks/use-delivery-job";
 import { STATUS_CONFIG, PACKAGE_ICON } from "@/constants/delivery-job";
 import { DeliveryStatus } from "@swift-route/types";
 import useUpdateDeliveryStatus from "@/hooks/use-update-delivery-status";
+import ToastContent from "@/components/ToastContent";
+import { useEffect } from "react";
 
 const ACTION_LABEL: Record<DeliveryStatus, string> = {
   [DeliveryStatus.ASSIGNED]: "Mark as Picked Up",
@@ -32,9 +35,16 @@ const formatDate = (date: Date | string) =>
   });
 
 export default function DeliveryJobDetails() {
+  const { bottom } = useSafeAreaInsets()
   const { id } = useLocalSearchParams<{ id: string }>();
   const job = useDeliveryJob(id);
-  const { updateStatus, loading } = useUpdateDeliveryStatus();
+  const { updateStatus, loading, error } = useUpdateDeliveryStatus();
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Error', { description: error, id: "update-status-error" });
+    }
+  }, [error])
 
   if (!job) {
     return (
@@ -47,7 +57,6 @@ export default function DeliveryJobDetails() {
     );
   }
 
-  const insets = useSafeAreaInsets();
   const badge = STATUS_CONFIG[job.status];
   const actionLabel = ACTION_LABEL[job.status];
   const actionStyle = NEXT_STATUS_STYLE[job.status];
@@ -62,98 +71,115 @@ export default function DeliveryJobDetails() {
   return (
     <>
       <Stack.Screen options={{ title: "Job Details" }} />
-      <View style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ padding: 16, gap: 20 }}>
+      <Toast position="bottom-center" duration={3000}>
+        <View style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={{ padding: 16, gap: 20 }}>
 
-          <YStack gap="$2">
-            <SectionLabel>Status</SectionLabel>
-            <XStack>
-              <Text style={{
-                fontSize: 13, fontWeight: "700",
-                backgroundColor: badge.bg, color: badge.color,
-                paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
-              }}>
-                {badge.label}
+            <YStack gap="$2">
+              <SectionLabel>Status</SectionLabel>
+              <XStack>
+                <Text style={{
+                  fontSize: 13, fontWeight: "700",
+                  backgroundColor: badge.bg, color: badge.color,
+                  paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
+                }}>
+                  {badge.label}
+                </Text>
+              </XStack>
+            </YStack>
+
+            <Separator />
+
+            <YStack gap="$2">
+              <SectionLabel>Package Type</SectionLabel>
+              <Text style={{ fontSize: 15 }}>
+                {PACKAGE_ICON[job.packageType]} {job.packageType.charAt(0).toUpperCase() + job.packageType.slice(1)}
               </Text>
-            </XStack>
-          </YStack>
+            </YStack>
 
-          <Separator />
+            <Separator />
 
-          <YStack gap="$2">
-            <SectionLabel>Package Type</SectionLabel>
-            <Text style={{ fontSize: 15 }}>
-              {PACKAGE_ICON[job.packageType]} {job.packageType.charAt(0).toUpperCase() + job.packageType.slice(1)}
-            </Text>
-          </YStack>
+            <YStack gap="$2">
+              <SectionLabel>Pickup Address</SectionLabel>
+              <Text style={{ fontSize: 15 }}>{job.pickupAddress}</Text>
+            </YStack>
 
-          <Separator />
+            <YStack gap="$2">
+              <SectionLabel>Dropoff Address</SectionLabel>
+              <Text style={{ fontSize: 15 }}>{job.dropoffAddress}</Text>
+            </YStack>
 
-          <YStack gap="$2">
-            <SectionLabel>Pickup Address</SectionLabel>
-            <Text style={{ fontSize: 15 }}>{job.pickupAddress}</Text>
-          </YStack>
+            {job.notes.length > 0 && (
+              <>
+                <Separator />
+                <YStack gap="$2">
+                  <SectionLabel>Notes</SectionLabel>
+                  {job.notes.map((n) => (
+                    <Text key={n.id} style={{ fontSize: 15 }}>• {n.note}</Text>
+                  ))}
+                </YStack>
+              </>
+            )}
 
-          <YStack gap="$2">
-            <SectionLabel>Dropoff Address</SectionLabel>
-            <Text style={{ fontSize: 15 }}>{job.dropoffAddress}</Text>
-          </YStack>
+            <Separator />
 
-          {job.notes.length > 0 && (
-            <>
-              <Separator />
-              <YStack gap="$2">
-                <SectionLabel>Notes</SectionLabel>
-                {job.notes.map((n) => (
-                  <Text key={n.id} style={{ fontSize: 15 }}>• {n.note}</Text>
-                ))}
-              </YStack>
-            </>
-          )}
+            <YStack gap="$2">
+              <SectionLabel>Ordered</SectionLabel>
+              <Text style={{ fontSize: 15 }}>{formatDate(job.createdAt)}</Text>
+            </YStack>
 
-          <Separator />
+            <YStack gap="$2">
+              <SectionLabel>Last Modified</SectionLabel>
+              <Text style={{ fontSize: 15 }}>{formatDate(job.updatedAt)}</Text>
+            </YStack>
 
-          <YStack gap="$2">
-            <SectionLabel>Ordered</SectionLabel>
-            <Text style={{ fontSize: 15 }}>{formatDate(job.createdAt)}</Text>
-          </YStack>
+          </ScrollView>
 
-          <YStack gap="$2">
-            <SectionLabel>Last Modified</SectionLabel>
-            <Text style={{ fontSize: 15 }}>{formatDate(job.updatedAt)}</Text>
-          </YStack>
+          <Toast.Viewport portalToRoot={false} offset={{ bottom: 16 + bottom }}>
+            <Toast.List
+              renderItem={({ toast: t, index }) => (
+                <Toast.Item
+                  key={t.id}
+                  toast={t}
+                  index={index}
+                  testID="update-status-error-toast"
+                >
+                  <ToastContent toast={t} />
+                </Toast.Item>
+              )}
+            />
+          </Toast.Viewport>
 
-        </ScrollView>
-
-        <View style={{ padding: 16, paddingBottom: 16 + insets.bottom, borderTopWidth: 1, borderTopColor: "#E5E7EB" }}>
-          <Button
-            id="update-status-btn"
-            size="$5"
-            disabled={loading || isDelivered}
-            onPress={handleNext}
-            style={(actionStyle) ? { backgroundColor: actionStyle.bg } : undefined}
-          >
-            {loading &&
-              <Spinner
-                id="update-status-spinner"
-                size="small"
-                color={actionStyle ? actionStyle.color : "#888"}
-                style={{ marginRight: 8 }}
-              />}
-            <Text
-              id="update-status-label"
-              style={{
-                fontWeight: "700",
-                color: actionStyle ?
-                  actionStyle.color :
-                  "#888"
-              }}
+          <View style={{ padding: 16, paddingBottom: 16 + bottom, borderTopWidth: 1, borderTopColor: "#E5E7EB" }}>
+            <Button
+              id="update-status-btn"
+              size="$5"
+              disabled={loading || isDelivered}
+              onPress={handleNext}
+              style={(actionStyle) ? { backgroundColor: actionStyle.bg } : undefined}
             >
-              {actionLabel}
-            </Text>
-          </Button>
+              {loading &&
+                <Spinner
+                  id="update-status-spinner"
+                  size="small"
+                  color={actionStyle ? actionStyle.color : "#888"}
+                  style={{ marginRight: 8 }}
+                />}
+              <Text
+                id="update-status-label"
+                style={{
+                  fontWeight: "700",
+                  color: actionStyle ?
+                    actionStyle.color :
+                    "#888"
+                }}
+              >
+                {actionLabel}
+              </Text>
+            </Button>
+          </View>
         </View>
-      </View>
+      </Toast>
     </>
   );
 }
