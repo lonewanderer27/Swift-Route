@@ -132,6 +132,13 @@ export default function DeliveryJobDetails() {
             onPress={handleNext}
             style={(actionStyle) ? { backgroundColor: actionStyle.bg } : undefined}
           >
+            {loading &&
+              <Spinner
+                id="update-status-spinner"
+                size="small"
+                color={actionStyle ? actionStyle.color : "#888"}
+                style={{ marginRight: 8 }}
+              />}
             <Text
               style={{
                 fontWeight: "700",
