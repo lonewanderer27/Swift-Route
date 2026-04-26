@@ -12,6 +12,9 @@ Swift Route is a **pnpm monorepo** with two apps:
 The `packages/` directory holds shared packages consumed by both apps:
 
 - `packages/types` — shared TypeScript types and enums (`@swift-route/types`)
+- `packages/seed-data` — shared seed data and ID constants (`@swift-route/seed-data`), used by both the backend store and mobile tests
+
+Ignore `apps/swift-app/app-example/` — it is the Expo scaffold template, not live code.
 
 ## Package Manager
 
@@ -75,7 +78,7 @@ All routes under `/delivery-jobs`:
 
 Unit tests spin up real `NestJS TestingModule` instances with real service — no mocks. Tests are **stateful and ordered within a describe block**: status-transition tests advance a single job (`JOB_IDS.chris_assigned`) through the full lifecycle across multiple `it()` calls, relying on Jest's sequential execution to carry state between them.
 
-`JOB_IDS` and `COURIER_IDS` constants in `src/stores/` are the canonical IDs to use in tests.
+`JOB_IDS` and `COURIER_IDS` constants in `packages/seed-data/src/job-ids.ts` are the canonical IDs to use in tests.
 
 ### Seed data
 
@@ -93,15 +96,44 @@ pnpm android          # Android emulator
 pnpm lint             # expo lint (ESLint)
 ```
 
+Run mobile tests (one-shot, from repo root):
+```bash
+pnpm --filter ./apps/swift-app test -- --watchAll=false
+```
+
 ### Routing structure
 
 - `app/_layout.tsx` — root Stack navigator
-- `app/(tabs)/` — tab group; `_layout.tsx` defines the bottom tab bar
-- `app/modal.tsx` — modal screen
+- `app/index.tsx` — My Jobs list screen
+- `app/delivery-job/[id].tsx` — Job Detail screen
+
+### State management
+
+Two Zustand stores:
+
+- `store/delivery-jobs.store.ts` — holds `jobs[]`, `loading`, `error`, `prevJobs` (snapshot for optimistic rollback). `advanceJobStatus` applies optimistic updates; `revertJobStatus` restores `prevJobs` on API failure.
+- `store/courier.store.ts` — holds the selected `courierId` (persisted across navigation).
+
+### API client
+
+`services/api-client.ts` — Axios instance. Android emulator routes through `10.0.2.2:3000`; iOS/web uses `localhost:3000`.
+
+### UI library
+
+The app uses **Tamagui** (`2.0.0-rc.41`) for layout primitives (`YStack`, `XStack`, `Button`, `Spinner`, `Separator`) and `Avatar`. Plain React Native `StyleSheet` is used for custom styling where Tamagui is not involved.
+
+### Mobile testing patterns
+
+Tests live in `app/delivery-job/__tests__/` and `hooks/`. Key conventions:
+
+- Tamagui components are shimmed with plain `View`/`React.createElement` in `jest.mock("tamagui", ...)`.
+- `UNSAFE_getByProps({ id: "..." })` is used to locate elements because shimmed Tamagui components do not support `testID`.
+- `use-update-delivery-status` has a **3-second simulated network delay** (`setTimeout(resolve, 3000)`). Tests must call `jest.useFakeTimers()` and `act(() => jest.advanceTimersByTime(3000))` before asserting post-update state. Each `TODO` comment in the test marks this workaround.
+- Import test fixtures from `@swift-route/seed-data` (`COURIER_IDS`, `JOB_IDS`, `deliveryJobsStore`).
 
 ### Path aliases
 
-`@/` maps to `apps/swift-app/` root. `@swift-route/types` resolves via Metro config watching the monorepo root.
+`@/` maps to `apps/swift-app/` root. `@swift-route/types` and `@swift-route/seed-data` resolve via Metro config watching the monorepo root.
 
 ### Theming
 
@@ -111,7 +143,13 @@ Colors and theme tokens live in `constants/theme.ts`. Use `useThemeColor` hook a
 
 Package name: `@swift-route/types`. No build step — imported directly from source.
 
-- `src/enums.ts` — `DeliveryStatus` (`assigned | in-transit | delivered`) and `PackageType` (`document | perishable | fragile | appliance | furniture`)
+- `src/enums.ts` — `DeliveryStatus` and `PackageType` defined as **`const` objects** (not TypeScript `enum`) to work around a NestJS + TypeScript 5.7 incompatibility. Values: `DeliveryStatus.ASSIGNED`, `IN_TRANSIT`, `DELIVERED`; `PackageType.DOCUMENT`, `PERISHABLE`, `FRAGILE`, `APPLIANCE`, `FURNITURE`.
 - `src/index.ts` — public surface; re-exports everything
 
 When adding new shared types, define in `src/` and re-export from `src/index.ts`.
+
+## Shared Seed Data (`packages/seed-data`)
+
+Package name: `@swift-route/seed-data`. No build step — imported directly from source.
+
+Exports `COURIER_IDS`, `JOB_IDS`, `courierStore`, `deliveryNotesStore`, `deliveryJobsStore`. Both the backend (`src/stores/`) and mobile tests import from here to ensure consistent test fixtures.
