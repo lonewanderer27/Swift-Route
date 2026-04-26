@@ -111,6 +111,77 @@ Test conventions:
 
 ---
 
+## Mobile App — Design Decisions
+
+### Screen and component structure
+
+The app has two screens under Expo Router's file-based routing:
+
+- `app/_layout.tsx` — root Stack navigator, Tamagui provider, and toast provider live here
+- `app/index.tsx` (My Jobs) — owns the list shell; delegates card rendering to `DeliveryJobCard`, skeleton loading to `DeliveryJobCardLoader`, and courier switching to `CourierDialogConfig`
+- `app/delivery-job/[id].tsx` (Job Detail) — owns the action button and error toast; delegates status data to `useDeliveryJob` and mutation to `useUpdateDeliveryStatus`
+- Components in `components/` are kept display-only with no store access; all store reads/writes go through hooks
+
+See the attached MarkMap diagram for a visual overview.
+<img src="./docs/images/frontend-architecture.svg" width="100%" />
+
+### How the Zustand store is organised and why
+
+Two stores with distinct responsibilities:
+
+- `useDeliveryJobsStore` — owns the job list, loading, error, and the `prevJobs` rollback snapshot. Actions: `setJobs`, `setLoading`, `setError`, `advanceJobStatus`, `revertJobStatus`
+- `useCourierStore` — owns only the selected `courierId`, persisted across navigation. Kept separate so courier selection changes don't trigger re-renders in job-list subscriptions
+
+Zustand's flat, selector-based subscriptions made it straightforward to isolate the optimistic-update state (`prevJobs`) inside the store without threading it through component props.
+
+### How optimistic updates and rollback are handled
+
+- Courier taps the action button → `advanceJobStatus(id, nextStatus)` immediately snapshots `jobs` into `prevJobs` and patches the job in the list → UI reflects the new status instantly
+- A simulated 3-second network delay fires, then the real `PATCH /delivery-jobs/:id/status` call is made
+- **Happy path**: API succeeds → `setLoading(false)`, update is committed
+- **Error path**: API throws → `revertJobStatus(errorMessage)` restores `jobs` from `prevJobs`, clears the snapshot, sets `error` → error toast is shown and the button re-enables
+
+See the attached UML sequence diagram for the full flow.
+<img src="./docs/images/optimistic-update-uml.png" align="center" style="width: 100%" />
+
+### Styling choice and why
+
+Tamagui was chosen for its layout primitives — `YStack`, `XStack`, `Button`, `Spinner`, `Separator`, and `Avatar` — which made it straightforward to compose screens and components quickly without writing boilerplate layout code. Where the primitives weren't enough, plain React Native `StyleSheet` was used to customise further (for example, the status badge pill).
+
+### What I'd change or prioritise with more time
+
+#### React Query for data fetching + built-in network retry
+Replace `useDeliveryJobs` and `useDeliveryJob` with React Query hooks that wrap the existing service class — the service class stays, since it cleanly organises network requests per feature.
+
+React Query gives automatic network error propagation, and built-in retry with exponential backoff where a transient network blip when marking a job delivered wouldn't roll back immediately, it would retry transparently before giving up.
+
+#### Keep Zustand's current responsibility
+With React Query owning server state, Zustand stays responsible for what it's good at: the optimistic update snapshot (`prevJobs` / `revertJobStatus`) and the courier selection (`useCourierStore`).
+
+#### Replace the delivered action button with a "Delivery complete" banner
+Advance status currently renders a disabled button that a courier can tap and get no feedback from. A toast is clearer and avoids the confusion of a tappable-looking element that does nothing.
+
+#### Proper environment configuration
+The API base URL is a runtime conditional in `api-client.ts` (`10.0.2.2` vs `localhost`). There's no `.env` / `app.config.js` setup for dev / staging / prod targets — the first thing a CI/CD pipeline would need is environment-based builds.
+
+#### Performance on large job lists
+`DeliveryJobCard` is not memoized, `handleJob` is recreated every render, and the store subscription in `index.tsx` pulls the full `jobs` array so any store change (including `loading` toggling) re-renders the entire list. 
+
+Targeted fixes: 
+- `React.memo` on the card, 
+- `useCallback` on the handler
+- Zustand `useShallow` selector so the list only re-renders when `jobs` actually changes, and `getItemLayout` if card heights are fixed. 
+
+Beyond that, swapping `FlatList` for **FlashList** is also another option (Shopify's recycler-based replacement) would give a significant frame-rate improvement on long lists without requiring changes to the card components themselves.
+
+#### Accessibility
+Most interactive elements — cards, the action button, the avatar switcher — have no `accessibilityLabel` or `accessibilityRole`. The status badge is already text not color-only which is good, but the delivered button doesn't announce its `disabled` state to screen readers. This is a legal requirement in many markets and straightforward to implement, albeit time consuming.
+
+#### Remove the simulated 3-second delay
+Exists only to make the spinner visible during development. Real network latency makes it unnecessary, and the test `TODO` comments can be cleaned up at the same time.
+
+---
+
 ## Shared Types (`packages/types`)
 
 Package name: `@swift-route/types`. No build step — imported directly from source via the monorepo workspace.
