@@ -195,10 +195,11 @@ describe("DeliveryJobDetails", () => {
 
     const { getByText, UNSAFE_getByProps } = render(<DeliveryJobDetails />);
 
-    // Initial state: the store holds jk_assigned (ASSIGNED), so the first action label must be shown.
-    expect(getByText("Mark as Picked Up")).toBeTruthy();
-
     const btn = UNSAFE_getByProps({ id: "update-status-btn" });
+    const label = UNSAFE_getByProps({ id: "update-status-label" });
+
+    // Initial state should be ASSIGNED, so the button label must be "Mark as Picked Up".
+    expect(label.props.children).toBe("Mark as Picked Up");
 
     // Transition 1: ASSIGNED → IN_TRANSIT
     fireEvent.press(btn);
@@ -211,11 +212,31 @@ describe("DeliveryJobDetails", () => {
 
     await waitFor(() => {
       // The optimistic update changed the store to IN_TRANSIT, so the next action label must appear.
-      expect(getByText("Mark as Delivered")).toBeTruthy();
+      expect(label.props.children).toBe("Mark as Delivered");
 
       // loading is false after the API resolves and the job is not yet DELIVERED,
       // so the button must be interactive again for the next press.
       expect(btn.props.disabled).toBe(false);
+    });
+
+    // Transition 2: IN_TRANSIT → DELIVERED
+
+    // Simulate the courier tapping "Mark as Delivered".
+    // advanceJobStatus fires immediately, setting the store to DELIVERED.
+    fireEvent.press(btn);
+
+    /* 
+      Advance past the 3 s delay again for the second API call.
+      TODO: Remove this once the simulated delay is removed from the hook!
+    */
+    act(() => { jest.advanceTimersByTime(3000); });
+
+    await waitFor(() => {
+      // The item has now been delivered, this should be the last status update.
+      expect(label.props.children).toBe("Delivered");
+
+      // so the button stays permanently disabled — there is no further action for a delivered job.
+      expect(btn.props.disabled).toBe(true);
     });
   });
 });
