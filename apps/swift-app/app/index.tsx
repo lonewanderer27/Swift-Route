@@ -50,7 +50,13 @@ export default function Index() {
             ))}
           </View>
         )}
-        {!(loading && jobs.length === 0) && (
+        {!loading && error && jobs.length === 0 && (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 12 }}>
+            <Text style={{ fontSize: 16, color: "#888" }}>{error}</Text>
+            <Text style={{ fontSize: 14, color: "#3B82F6" }} onPress={refetch}>Try again</Text>
+          </View>
+        )}
+        {!(loading && jobs.length === 0) && !(error && jobs.length === 0) && (
           <FlatList
             data={jobs}
             keyExtractor={(item) => item.id}
@@ -60,7 +66,7 @@ export default function Index() {
             onRefresh={refetch}
             ListEmptyComponent={() => (
               <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: 50 }}>
-                <Text style={{ fontSize: 16, color: "#888" }}>{error ?? "No delivery jobs found."}</Text>
+                <Text style={{ fontSize: 16, color: "#888" }}>No delivery jobs found.</Text>
               </View>
             )}
           />
