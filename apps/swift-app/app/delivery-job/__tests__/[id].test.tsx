@@ -1,5 +1,6 @@
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams } from "expo-router";
+import { toast } from "@tamagui/toast/v2";
 import { COURIER_IDS, JOB_IDS, deliveryJobsStore } from "@swift-route/seed-data";
 import { useDeliveryJobsStore } from "@/store/delivery-jobs.store";
 import DeliveryJobsService from "@/services/delivery-jobs.service";
@@ -22,8 +23,8 @@ jest.mock("../../../services/delivery-jobs.service", () => ({
   default: { updateStatus: jest.fn() },
 }));
 
-// Mocking the toast function to prevent actual toast notifications during testing
-const mockToastError = jest.fn();
+// Mocking the toast module to prevent actual toasts from showing 
+// during tests and to allow us to assert calls to toast.error.
 jest.mock("@tamagui/toast/v2", () => ({
   Toast: Object.assign(
     ({ children }: { children: React.ReactNode }) => children,
@@ -33,7 +34,7 @@ jest.mock("@tamagui/toast/v2", () => ({
       Item: () => null,
     }
   ),
-  toast: { error: mockToastError },
+  toast: { error: jest.fn() },
 }));
 
 // Mocking Tamagui components to prevent rendering issues during testing
@@ -65,8 +66,10 @@ beforeEach(() => {
   // Using fake timers to control time-based functions during testing
   jest.useFakeTimers();
 
-  // Reset mocks and state before each test case to ensure a clean slate
-  mockToastError.mockClear();
+  // Reset mocks and state before each test case to ensure a clean slate.
+  // toast.error here is the jest.fn() defined in the mock factory above,
+  // accessed through the mocked module import at the top of this file.
+  (toast.error as jest.Mock).mockClear();
 
   // Reset the mock implementation of the 
   // updateStatus function to ensure it doesn't interfere with other tests
@@ -105,9 +108,11 @@ describe("DeliveryJobDetails", () => {
 
   it("should disable the button and show a spinner while the status update is in flight", async () => {
     // Return a promise that never resolves so the loading state stays true for the duration of the test.
-    // This lets us assert the in-flight UI without the update ever completing.
-    (DeliveryJobsService.updateStatus as jest.Mock).mockReturnValue(new Promise(() => {}));
+    // This lets us check the UI while it is loading without the update ever completing.
+    (DeliveryJobsService.updateStatus as jest.Mock).mockReturnValue(new Promise(() => { }));
 
+    // Render the screen and use UNSAFE_getByProps to locate elements by their props 
+    // since the Tamagui Button and Spinner shims don't support testIDs.
     const { UNSAFE_getByProps } = render(<DeliveryJobDetails />);
 
     // Locate the action button by its id prop (preserved on the shimmed View).
@@ -122,6 +127,8 @@ describe("DeliveryJobDetails", () => {
       
       So to test the loading state, we need to advance timers by 3 seconds
       to trigger the state change that happens when the API call is made.
+
+      TODO: Remove this once the simulated delay is removed from the hook!
     */
     act(() => { jest.advanceTimersByTime(3000); });
 
@@ -131,6 +138,54 @@ describe("DeliveryJobDetails", () => {
 
       // The button must be disabled so the courier cannot fire duplicate updates.
       expect(btn.props.disabled).toBe(true);
+    });
+  });
+
+  it("should show an error toast and re-enable the button when the API call fails", async () => {
+    // Reject with a specific message so we can assert the exact text surfaced to the courier.
+    const errorMessage = "Network error";
+    (DeliveryJobsService.updateStatus as jest.Mock).mockRejectedValue(
+      new Error(errorMessage),
+    );
+
+    /*
+      At this point, since the API call is mocked to reject when the button is pressed.
+      It has been propagated to the catch block in the hook,
+      which calls setError with the error message and then revertJobStatus.
+
+      The screen watches the error field through useEffect.. and calls toast.error when it is set.
+      and that is what we we will assert in this test.
+    */
+
+    // Render the screen and use UNSAFE_getByProps to locate elements by their props 
+    // since the Tamagui Button and Spinner shims don't support testIDs.
+    const { UNSAFE_getByProps } = render(<DeliveryJobDetails />);
+
+    // Locate the action button by its id prop we set earlier.
+    const btn = UNSAFE_getByProps({ id: "update-status-btn" });
+
+    // Simulate advancement of job status by tapping the button.
+    fireEvent.press(btn);
+
+    /*  
+      Advance past the hook's 3 s simulated network delay so the rejected
+      API call is awaited and the catch block runs (setError + revertJobStatus).
+
+      TODO: Remove this once the simulated delay is removed from the hook!
+    */
+    act(() => { jest.advanceTimersByTime(3000); });
+
+    await waitFor(() => {
+      // The component's useEffect watches the error field and calls toast.error when it is set.
+      // Asserting the spy confirms the error message is propagated all the way to the UI layer.
+      expect(toast.error as jest.Mock).toHaveBeenCalledWith(
+        "Error",
+        expect.objectContaining({ description: errorMessage }),
+      );
+
+      // Once the catch block finishes, setLoading(false) is called.
+      // The button must be interactive again so the courier can retry.
+      expect(btn.props.disabled).toBe(false);
     });
   });
 });
