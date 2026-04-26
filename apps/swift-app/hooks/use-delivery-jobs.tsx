@@ -8,6 +8,7 @@ const useDeliveryJobs = (courierId: string, status?: DeliveryStatus) => {
 
   async function fetchJobs() {
     setLoading(true);
+    setError(null);
 
     try {
       /*
