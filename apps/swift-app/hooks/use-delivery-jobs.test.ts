@@ -58,12 +58,42 @@ describe("useDeliveryJobs", () => {
     // Initially, loading should be true
     expect(useDeliveryJobsStore.getState().loading).toBe(true);
 
-    // Resolve the promise to simulate data fetching completion
+    // Resolve the promise to Sophia's jobs
     act(() => resolveDeferred(sophiaJobs));
 
     // After resolving, loading should eventually become false
     await waitFor(() => {
       expect(useDeliveryJobsStore.getState().loading).toBe(false);
+    });
+  });
+
+  it("should set the error message and the jobs shall be empty on failure", async () => {
+    // Mock the service to reject with an API error
+    (DeliveryJobsService.getCourierJobs as jest.Mock).mockRejectedValue(
+      /*
+        Message from the backend is not propagated to the UI at the moment
+        so we are free to set any message here.
+
+        Ideally it should be the same message
+        as the one we set in the catch block of the hook.
+      */
+      new Error("Network error"),
+    );
+
+    // execute the hook
+    renderHook(() => useDeliveryJobs(courierId));
+
+    await waitFor(() => {
+      const state = useDeliveryJobsStore.getState();
+      /*
+        "Failed to load delivery jobs" is the error message we set in the catch block of the hook,
+        not the original error message from the service, which we cannot get at the moment.
+
+        Things to improve perhaps? ...yet not needed for demo anyway
+      */
+      expect(state.error).toBe("Failed to load delivery jobs.");
+      expect(state.loading).toBe(false);
+      expect(state.jobs).toHaveLength(0);
     });
   });
 });
