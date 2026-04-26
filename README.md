@@ -131,7 +131,7 @@ type DeliveryJob  = { id, createdAt, updatedAt, pickupAddress, dropoffAddress,
 
 ## Shared Seed Data (`packages/seed-data`)
 
-Package name: `@swift-route/seed-data`. No build step — imported directly from source.
+Package name: `@swift-route/seed-data`. Built with TypeScript to `dist/` and consumed as a workspace package.
 
 Exports `COURIER_IDS`, `JOB_IDS`, `courierStore`, `deliveryNotesStore`, and `deliveryJobsStore`. Both the backend in-memory store and mobile tests import from here to guarantee consistent fixtures across the entire monorepo.
 

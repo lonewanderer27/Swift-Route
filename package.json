@@ -6,6 +6,12 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "build:packages": "pnpm --filter @swift-route/types build && pnpm --filter @swift-route/seed-data build",
+    "postinstall": "pnpm run build:packages",
+    "prebuild": "pnpm run build:packages",
+    "prestart": "pnpm run build:packages",
+    "prestart:dev": "pnpm run build:packages",
+    "prestart:debug": "pnpm run build:packages",
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
