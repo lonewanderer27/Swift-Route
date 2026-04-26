@@ -6,8 +6,14 @@ const useUpdateDeliveryStatus = () => {
   const { advanceJobStatus, revertJobStatus, loading, setLoading, setError } = useDeliveryJobsStore();
 
   const updateStatus = async (id: string, status: DeliveryStatus) => {
+    setLoading(true);
+    setError(null);
+
     // optimistically update status in store
     advanceJobStatus(id, status);
+
+    // simulate slow network
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     try {
       // call backend to updaate delivery status
