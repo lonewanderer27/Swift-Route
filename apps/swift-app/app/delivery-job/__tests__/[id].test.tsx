@@ -99,11 +99,14 @@ describe("DeliveryJobDetails", () => {
   it("should render bottom bar button as 'Mark as Picked Up'", () => {
     // Render the screen — beforeEach already pointed useLocalSearchParams at jk_assigned,
     // so the component loads that specific job from the store.
-    const { getByText } = render(<DeliveryJobDetails />);
+    const { UNSAFE_getByProps } = render(<DeliveryJobDetails />);
+
+    // Locate the label element by its id prop we set earlier.
+    const label = UNSAFE_getByProps({ id: "update-status-label" });
 
     // "Mark as Picked Up" is the ACTION_LABEL for DeliveryStatus.ASSIGNED.
     // Finding it confirms the component reads the job's status and maps it to the correct label.
-    expect(getByText("Mark as Picked Up")).toBeTruthy();
+    expect(label.props.children).toBe("Mark as Picked Up");
   });
 
   it("should disable the button and show a spinner while the status update is in flight", async () => {
@@ -193,7 +196,7 @@ describe("DeliveryJobDetails", () => {
     // Both button presses will succeed — the optimistic store updates stick on each transition.
     (DeliveryJobsService.updateStatus as jest.Mock).mockResolvedValue(undefined);
 
-    const { getByText, UNSAFE_getByProps } = render(<DeliveryJobDetails />);
+    const { UNSAFE_getByProps } = render(<DeliveryJobDetails />);
 
     const btn = UNSAFE_getByProps({ id: "update-status-btn" });
     const label = UNSAFE_getByProps({ id: "update-status-label" });
