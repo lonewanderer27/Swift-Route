@@ -14,7 +14,8 @@ swift-route/
 │   ├── swift-route/     # NestJS 11 backend API
 │   └── swift-app/       # Expo / React Native mobile app (Expo SDK 54)
 └── packages/
-    └── types/           # Shared TypeScript types (@swift-route/types)
+    ├── types/           # Shared TypeScript types (@swift-route/types)
+    └── seed-data/       # Shared seed data and ID constants (@swift-route/seed-data)
 ```
 
 The workspace is defined in `pnpm-workspace.yaml` with hoisted node linking.
@@ -128,6 +129,16 @@ type DeliveryJob  = { id, createdAt, updatedAt, pickupAddress, dropoffAddress,
 
 ---
 
+## Shared Seed Data (`packages/seed-data`)
+
+Package name: `@swift-route/seed-data`. No build step — imported directly from source.
+
+Exports `COURIER_IDS`, `JOB_IDS`, `courierStore`, `deliveryNotesStore`, and `deliveryJobsStore`. Both the backend in-memory store and mobile tests import from here to guarantee consistent fixtures across the entire monorepo.
+
+`JOB_IDS.ian` is a non-existent ID reserved for 404 test cases.
+
+---
+
 ## Getting Started
 
 **Prerequisites:** Node.js 20+, pnpm 9+
@@ -175,6 +186,16 @@ cd apps/swift-app
 pnpm start        # Expo dev server
 pnpm ios          # iOS simulator
 pnpm android      # Android emulator
+```
+
+### Mobile Tests
+
+```bash
+# One-shot run (from repo root)
+pnpm --filter ./apps/swift-app test -- --watchAll=false
+
+# Single file
+pnpm --filter ./apps/swift-app test -- --watchAll=false apps/swift-app/app/delivery-job/__tests__/\[id\].test.tsx
 ```
 
 ### Other
